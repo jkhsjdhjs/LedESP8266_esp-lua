@@ -66,7 +66,7 @@ I2CLib.writeRegister = function (id, dev, reg, data)
     local rv
     i2c.start(id)
     if i2c.address(id, dev, i2c.TRANSMITTER) then
-        if i2c.write(id, reg, data) - 1 == data % 0xFF + 1 then
+        if i2c.write(id, reg, data) - 1 == (data == 0 and 1 or math.ceil(data / 0xFF)) then
             rv = true
         else
             rv = false
