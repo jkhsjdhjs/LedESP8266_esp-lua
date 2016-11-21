@@ -2,22 +2,24 @@
 
 I2CLib = {}
 
+I2CLib.id = nil
+
 -- init i2c bus
 -- params: sda pin, scl pin (for pin numbers see: https://nodemcu.readthedocs.io/en/master/en/modules/gpio/)
--- returns the i2c id (always 0)
-I2CLib.initialize = function (sda, scl)
-    local id = 0
-    i2c.setup(id, sda, scl, i2c.SLOW)
-    return id
+-- returns an i2c object
+function I2CLib:initialize(sda, scl)
+    self.id = 0
+    i2c.setup(self.id, sda, scl, i2c.SLOW)
+    return self
 end
 
 -- check if a specific device exists
 -- params: i2c id, device address
 -- returns true if device exists, false otherwise
-I2CLib.deviceExists = function (id, dev)
-    i2c.start(id)
-    exists = i2c.address(id, dev, i2c.TRANSMITTER)
-    i2c.stop(id)
+function I2CLib:deviceExists(dev)
+    i2c.start(self.id)
+    exists = i2c.address(self.id, dev, i2c.TRANSMITTER)
+    i2c.stop(self.id)
     if exists then
         return true
     end
@@ -27,10 +29,10 @@ end
 -- list connected devices
 -- params: i2c id
 -- returns a table with addresses of connected devices
-I2CLib.detectDevices = function (id)
+function I2CLib:detectDevices()
     local dev = {}
     for i = 0, 127 do
-        if I2CLib.deviceExists(id, i) then
+        if self:deviceExists(i) then
             dev[#dev + 1] = i
         end
     end
@@ -40,33 +42,33 @@ end
 -- read register
 -- params: i2c id, device address, register
 -- returns value from 0 - 255 on success and false on fail
-I2CLib.readRegister = function (id, dev, reg)
+function I2CLib:readRegister(dev, reg)
     local rv
-    i2c.start(id)
-    if i2c.address(id, dev, i2c.TRANSMITTER) then
-        i2c.write(id, reg)
-        i2c.stop(id)
-        i2c.start(id)
-        if i2c.address(id, dev, i2c.RECEIVER) then
-            rv = i2c.read(id, 1):byte()
-            i2c.stop(id)
+    i2c.start(self.id)
+    if i2c.address(self.id, dev, i2c.TRANSMITTER) then
+        i2c.write(self.id, reg)
+        i2c.stop(self.id)
+        i2c.start(self.id)
+        if i2c.address(self.id, dev, i2c.RECEIVER) then
+            rv = i2c.read(self.id, 1):byte()
         else
             rv = false
         end
     else
         rv = false
     end
+    i2c.stop(self.id)
     return rv
 end
 
 -- write register
 -- params: i2c id, device address, register, data to write
 -- returns true on success, false otherwise
-I2CLib.writeRegister = function (id, dev, reg, data)
+function I2CLib:writeRegister(dev, reg, data)
     local rv
-    i2c.start(id)
-    if i2c.address(id, dev, i2c.TRANSMITTER) then
-        if i2c.write(id, reg, data) - 1 == (data == 0 and 1 or math.ceil(data / 0xFF)) then
+    i2c.start(self.id)
+    if i2c.address(self.id, dev, i2c.TRANSMITTER) then
+        if i2c.write(self.id, reg, data) - 1 == (data == 0 and 1 or math.ceil(data / 0xFF)) then
             rv = true
         else
             rv = false
@@ -74,6 +76,6 @@ I2CLib.writeRegister = function (id, dev, reg, data)
     else
         rv = false
     end
-    i2c.stop(id)
+    i2c.stop(self.id)
     return rv
 end
