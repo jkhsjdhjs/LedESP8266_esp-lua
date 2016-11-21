@@ -83,7 +83,7 @@ function PCA9685:setColor(red, green, blue)
 end
 
 -- function to smoothly fade from the current color to the specified
--- params: red, green, blue, time (red, green and blue from 0x000 to 0xFFF and time nil or from 0 to infinity)
+-- params: red, green, blue, time (red, green and blue from 0x000 to 0xFFF and time nil or from 0 to infinity in miliseconds)
 -- returns true on success, false otherwise
 function PCA9685:fadeToColor(red, green, blue, time)
     if not time or time == 0 then
@@ -92,5 +92,29 @@ function PCA9685:fadeToColor(red, green, blue, time)
     local c_red = self:getChannelBrightness(self.channel.red)
     local c_green = self:getChannelBrightness(self.channel.green)
     local c_blue = self:getChannelBrightness(self.channel.blue)
+    if not c_red or not c_green or not c_blue then
+        return false
+    end
+    local step_red = (red - c_red) / time
+    local step_green = (green - c_green) / time
+    local step_blue = (blue - c_blue) / time
+    local cnt = 0
+    -- it takes about 20ms to set a color with :setColor(), so i'm using 30ms as tmr_interval
+    local tmr_interval = 30
+    local tmr_ref = 6
+    if not tmr.alarm(tmr_ref, tmr_interval, tmr.ALARM_AUTO, function()
+        if cnt >= time - tmr_interval then
+            tmr.unregister(tmr_ref)
+            self:setColor(red, green, blue)
+            return
+        end
+        c_red = c_red + tmr_interval * step_red
+        c_green = c_green + tmr_interval * step_green
+        c_blue = c_blue + tmr_interval * step_blue
+        self:setColor(c_red, c_green, c_blue)
+        cnt = cnt + tmr_interval
+    end) then
+        return false
+    end
     return true
 end
