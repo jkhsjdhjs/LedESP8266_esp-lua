@@ -54,9 +54,6 @@ end
 function PCA9685:setBrightness(channel, brightness)
     local register = self.channelToRegister(channel)
     if self:writeRegister(register + 3, bit.band(bit.rshift(brightness, 2 * 4), 0x0F)) and self:writeRegister(register + 2, bit.band(brightness, 0xFF)) then
-        print(register)
-        print(string.format("%02X", self:readRegister(register + 3)))
-        print(string.format("%02X", self:readRegister(register + 2)))
         return true
     else
         return false
