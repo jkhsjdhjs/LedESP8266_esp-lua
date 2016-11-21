@@ -4,5 +4,6 @@ pca9685_config = {
         red = 0,
         green = 1,
         blue = 2
-    }
+    },
+    tmr_ref = 6
 }

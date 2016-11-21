@@ -3,6 +3,7 @@ PCA9685 = {}
 PCA9685.i2c = nil
 PCA9685.address = nil
 PCA9685.channel = {}
+PCA9685.tmr_ref = nil
 
 
 -- converts a channel number to the address of the first register which belongs to the specified channel (each channel has 4 registers)
@@ -29,10 +30,11 @@ end
 -- initialize the PCA9685 module
 -- params: i2c bus object (from I2CLib.initialize()), device address, channels (for exmaple {red = 0, green = 1, blue = 2})
 -- returns self on success, false otherwise
-function PCA9685:initialize(i2c, address, channel)
+function PCA9685:initialize(i2c, address, channel, tmr_ref)
     self.i2c = i2c
     self.address = address
     self.channel = channel
+    self.tmr_ref = tmr_ref
     if not self:writeRegister(0x00, 0x00) then
         return false
     end
@@ -101,10 +103,9 @@ function PCA9685:fadeToColor(red, green, blue, time)
     local cnt = 0
     -- it takes about 20ms to set a color with :setColor(), so i'm using 30ms as tmr_interval
     local tmr_interval = 30
-    local tmr_ref = 6
-    if not tmr.alarm(tmr_ref, tmr_interval, tmr.ALARM_AUTO, function()
+    if not tmr.alarm(self.tmr_ref, tmr_interval, tmr.ALARM_AUTO, function()
         if cnt >= time - tmr_interval then
-            tmr.unregister(tmr_ref)
+            tmr.unregister(self.tmr_ref)
             self:setColor(red, green, blue)
             return
         end
