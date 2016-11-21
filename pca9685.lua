@@ -64,8 +64,8 @@ end
 -- returns brightness (from 0x000 to 0xFFF) on success, false otherwise
 function PCA9685:getChannelBrightness(channel)
     local register = self.channelToRegister(channel)
-    msb = bit.lshift(self:readRegister(register + 3), 2 * 4)
-    lsb = self:readRegister(register + 2)
+    local msb = bit.lshift(self:readRegister(register + 3), 2 * 4)
+    local lsb = self:readRegister(register + 2)
     if msb and lsb then
         return bit.bor(msb, lsb)
     end

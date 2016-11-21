@@ -18,7 +18,7 @@ end
 -- returns true if device exists, false otherwise
 function I2CLib:deviceExists(dev)
     i2c.start(self.id)
-    exists = i2c.address(self.id, dev, i2c.TRANSMITTER)
+    local exists = i2c.address(self.id, dev, i2c.TRANSMITTER)
     i2c.stop(self.id)
     if exists then
         return true
@@ -43,7 +43,7 @@ end
 -- params: i2c id, device address, register
 -- returns value from 0 - 255 on success and false on fail
 function I2CLib:readRegister(dev, reg)
-    local rv
+    local rv = false
     i2c.start(self.id)
     if i2c.address(self.id, dev, i2c.TRANSMITTER) then
         i2c.write(self.id, reg)
@@ -51,11 +51,7 @@ function I2CLib:readRegister(dev, reg)
         i2c.start(self.id)
         if i2c.address(self.id, dev, i2c.RECEIVER) then
             rv = i2c.read(self.id, 1):byte()
-        else
-            rv = false
         end
-    else
-        rv = false
     end
     i2c.stop(self.id)
     return rv
@@ -65,16 +61,12 @@ end
 -- params: i2c id, device address, register, data to write
 -- returns true on success, false otherwise
 function I2CLib:writeRegister(dev, reg, data)
-    local rv
+    local rv = false
     i2c.start(self.id)
     if i2c.address(self.id, dev, i2c.TRANSMITTER) then
         if i2c.write(self.id, reg, data) - 1 == (data == 0 and 1 or math.ceil(data / 0xFF)) then
             rv = true
-        else
-            rv = false
         end
-    else
-        rv = false
     end
     i2c.stop(self.id)
     return rv
