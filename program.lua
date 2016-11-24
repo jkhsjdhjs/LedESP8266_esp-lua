@@ -1,7 +1,7 @@
-dofile("i2c_config.lua")
-dofile("pca9685_config.lua")
-dofile("i2c_lib.lua")
-dofile("pca9685.lua")
+require "i2c_config"
+require "pca9685_config"
+require "i2c_lib"
+require "pca9685"
 
 function initialize()
     -- initialize i2c
