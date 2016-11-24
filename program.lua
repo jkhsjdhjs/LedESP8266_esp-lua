@@ -1,5 +1,6 @@
 require "i2c_config"
 require "pca9685_config"
+require "server_config"
 require "i2c_lib"
 require "pca9685"
 
@@ -20,8 +21,8 @@ end
 pca = initialize()
 
 if pca then
-    sv = net.createServer(net.TCP, 60)
-    sv:listen(6550, function(c)
+    sv = net.createServer(net.TCP, server_config.timeout)
+    sv:listen(server_config.port, function(c)
         c:on("receive", function(c, pl)
             data = cjson.decode(pl)
             if data.reqtype == "get" then
