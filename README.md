@@ -1,5 +1,11 @@
-# lua.led
+# LedESP8266_esp-lua
 Simple LED controlling software written in Lua for ESP8266 microcontrollers running NodeMCU with a PCA9685 as PWM-Driver.
+
+## Requirements:
+- ESP8266 running NodeMCU compiled with the following modules: bit, CJSON, file, GPIO, I²C, net, node, timer, UART, WiFi (you can compile your own custom firmware online and free here: https://nodemcu-build.com/)
+- PCA9685 PWM Driver
+- LED Strip (I am using a 12V strip)
+- ...
 
 ### TODO:
 - ~~restructure code~~
