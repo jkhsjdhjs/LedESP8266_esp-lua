@@ -1,4 +1,5 @@
 -- This lib is an extension for the NodeMCU i2c module and still requires it to run.
+require "message"
 
 I2CLib = {}
 
@@ -51,7 +52,15 @@ function I2CLib:readRegister(dev, reg)
         i2c.start(self.id)
         if i2c.address(self.id, dev, i2c.RECEIVER) then
             rv = i2c.read(self.id, 1):byte()
+        else
+            rv = message.create("error", "device_not_found", {
+                dev = dev
+            })
         end
+    else
+        rv = message.create("error", "device_not_found", {
+            dev = dev
+        })
     end
     i2c.stop(self.id)
     return rv
@@ -66,7 +75,17 @@ function I2CLib:writeRegister(dev, reg, data)
     if i2c.address(self.id, dev, i2c.TRANSMITTER) then
         if i2c.write(self.id, reg, data) - 1 == (data == 0 and 1 or math.ceil(data / 0xFF)) then
             rv = true
+        else
+            rv = message.create("error", "failed_write_register", {
+                dev = dev,
+                reg = reg,
+                data = data
+            })
         end
+    else
+        rv = message.create("error", "device_not_found", {
+            dev = dev
+        })
     end
     i2c.stop(self.id)
     return rv

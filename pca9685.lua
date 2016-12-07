@@ -1,3 +1,5 @@
+require "messages"
+
 PCA9685 = {}
 
 PCA9685.i2c = nil
@@ -35,15 +37,17 @@ function PCA9685:initialize(i2c, address, channel, tmr_ref)
     self.address = address
     self.channel = channel
     self.tmr_ref = tmr_ref
-    if not self:writeRegister(0x00, 0x00) then
-        return false
+    local rv = self:writeRegister(0x00, 0x00)
+    if type(rv) ~= "boolean" or rv == false then
+        return rv
     end
     -- initialize specified channels
     for k, v in pairs(self.channel) do
         v = self.channelToRegister(v)
         for l = v, v + 3 do
-            if not self:writeRegister(l, 0x00) then
-                return false
+            rv = self:writeRegister(l, 0x00)
+            if type(rv) ~= "boolean" or rv == false then
+                return rv
             end
         end
     end
@@ -55,10 +59,15 @@ end
 -- returns true on success, false otherwise
 function PCA9685:setChannelBrightness(channel, brightness)
     local register = self.channelToRegister(channel)
-    if self:writeRegister(register + 3, bit.band(bit.rshift(brightness, 2 * 4), 0x0F)) and self:writeRegister(register + 2, bit.band(brightness, 0xFF)) then
-        return true
+    local rv = self:writeRegister(register + 3, bit.band(bit.rshift(brightness, 2 * 4), 0x0F))
+    if rv ~= "boolean" or rv == false then
+        return rv
     end
-    return false
+    rv = self:writeRegister(register + 2, bit.band(brightness, 0xFF))
+    if rv ~= "boolean" or rv == false then
+        return rv
+    end
+    return true
 end
 
 -- get the LED brightness of a specific channel
@@ -66,22 +75,35 @@ end
 -- returns brightness (from 0x000 to 0xFFF) on success, false otherwise
 function PCA9685:getChannelBrightness(channel)
     local register = self.channelToRegister(channel)
-    local msb = bit.lshift(self:readRegister(register + 3), 2 * 4)
-    local lsb = self:readRegister(register + 2)
-    if msb and lsb then
-        return bit.bor(msb, lsb)
+    local rv = self:readRegister(register + 3)
+    if rv ~= "boolean" or rv == false then
+        return rv
     end
-    return false
+    local msb = bit.lshift(rv, 2 * 4)
+    rv = self:readRegister(register + 2)
+    if rv ~= "boolean" or rv == false then
+        return rv
+    end
+    return bit.bor(msb, rv)
 end
 
 -- set rgb color
 -- params: red, green, blue (each value from 0x000 to 0xFFF)
 -- returns true on success, false otherwise
 function PCA9685:setColor(red, green, blue)
-    if self:setChannelBrightness(self.channel.red, red) and self:setChannelBrightness(self.channel.green, green) and self:setChannelBrightness(self.channel.blue, blue) then
-        return true
+    local rv = self:setChannelBrightness(self.channel.red, red)
+    if rv ~= "boolean" or rv == false then
+        return rv
     end
-    return false
+    rv = self:setChannelBrightness(self.channel.green, green)
+    if rv ~= "boolean" or rv == false then
+        return rv
+    end
+    rv = self:setChannelBrightness(self.channel.blue, blue)
+    if rv ~= "boolean" or rv == false then
+        return rv
+    end
+    return true
 end
 
 -- function to smoothly fade from the current color to the specified
