@@ -41,7 +41,7 @@ end
 -- read register
 -- params: i2c id, device address, register
 -- returns value from 0 - 255 on success and false on fail
-local function I2CLib:readRegister(dev, reg, msgFunc)
+local function I2CLib:readRegister(dev, reg, wsh)
     local rv = false
     i2c.start(self.id)
     if i2c.address(self.id, dev, i2c.TRANSMITTER) then
@@ -53,15 +53,15 @@ local function I2CLib:readRegister(dev, reg, msgFunc)
             i2c.stop(self.id)
             return true
         else
-            if msgFunc then
-                msgFunc("error", "device_not_found", { dev = dev })
+            if wsh then
+                wsh:send("error", "device_not_found", { dev = dev })
             end
             i2c.stop(self.id)
             return false
         end
     else
-        if msgFunc then
-            msgFunc("error", "device_not_found", { dev = dev })
+        if wsh then
+            wsh:send("error", "device_not_found", { dev = dev })
         end
         i2c.stop(self.id)
         return false
@@ -71,7 +71,7 @@ end
 -- write register
 -- params: i2c id, device address, register, data to write
 -- returns true on success, false otherwise
-local function I2CLib:writeRegister(dev, reg, data, msgFunc)
+local function I2CLib:writeRegister(dev, reg, data, wsh)
     local rv = false
     i2c.start(self.id)
     if i2c.address(self.id, dev, i2c.TRANSMITTER) then
@@ -79,8 +79,8 @@ local function I2CLib:writeRegister(dev, reg, data, msgFunc)
             i2c.stop(self.id)
             return true
         else
-            if msgFunc then
-                msgFunc("error", "failed_write_register", {
+            if wsh then
+                wsh:send("error", "failed_write_register", {
                     dev = dev,
                     reg = reg,
                     data = data
@@ -90,8 +90,8 @@ local function I2CLib:writeRegister(dev, reg, data, msgFunc)
             return false
         end
     else
-        if msgFunc then
-            msgFunc("error", "device_not_found", { dev = dev })
+        if wsh then
+            wsh:send("error", "device_not_found", { dev = dev })
         end
         i2c.stop(self.id)
         return false
