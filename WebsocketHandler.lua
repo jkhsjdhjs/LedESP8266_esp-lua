@@ -1,15 +1,15 @@
-local WebsocketHandler = {}
+WebsocketHandler = {}
 
-local WebsocketHandler.websocket = nil
-local WebsocketHandler.receiver = nil
+WebsocketHandler.websocket = nil
+WebsocketHandler.receiver = nil
 
-local function WebsocketHandler:initialize(websocket, receiver)
+function WebsocketHandler:initialize(websocket, receiver)
     self.websocket = websocket
     self.receiver = receiver
     return self
 end
 
-local function WebsocketHandler:send(type, msg, data)
+function WebsocketHandler:send(type, msg, data)
     self.websocket:send(cjson.encode({
         receiver = self.receiver,
         type = type,
@@ -18,7 +18,7 @@ local function WebsocketHandler:send(type, msg, data)
     }))
 end
 
-local function WebsocketHandler:sendAll(type, msg, data)
+function WebsocketHandler:broadcast(type, msg, data)
     self.websocket:send(cjson.encode({
         receiver = nil,
         type = type,

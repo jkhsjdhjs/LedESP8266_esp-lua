@@ -4,9 +4,8 @@ config = {
         scl = 2
     },
     websocket = {
-        url = "wss://",
-        port = 6550,
-        timeout = 60
+        url = "ws://192.168.0.17:14795",
+        reconnect_interval = 10000
     },
     pca9685 = {
         address = 0x40,
@@ -14,7 +13,6 @@ config = {
             red = 0,
             green = 1,
             blue = 2
-        },
-        tmr_ref = 6
+        }
     }
 }

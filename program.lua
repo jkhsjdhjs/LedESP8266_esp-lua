@@ -3,21 +3,25 @@ require "WebsocketHandler"
 require "I2CLib"
 require "PCA9685"
 
--- json communication via wss://
--- {
---      receiver: uuid of the receiver (string),
---      type: "info" / "warning" / "error",
---      msg: the actual message (string),
---      data: another json object
--- }
+function print_error(self, type, msg, data)
+    print("error type: ", type)
+    print("error msg: ", msg)
+    print("error data: ", cjson.encode(data))
+end
+
+-- initialize pca9685
+local pca = PCA9685:initialize(I2CLib:initialize(config.i2c.sda, config.i2c.scl), config.pca9685.address, config.pca9685.channel, {
+    send = print_error,
+    broadcast = print_error
+})
 
 local ws = websocket.createClient()
-
 ws:on("receive", function(_, msg, opcode)
+    json = cjson.decode(msg)
     wsh = WebsocketHandler:initialize(ws, json.sender)
-    if json.reqtype == "get" then
+    if json.method == "get" then
         ws:send(cjson.encode({
-            receiver = json.receiver,
+            receiver = json.sender,
             type = "info",
             msg = nil,
             data = {
@@ -26,25 +30,21 @@ ws:on("receive", function(_, msg, opcode)
                 blue = pca:getChannelBrightness(pca.channel.blue, wsh)
             }
         }))
-    elseif json.reqtype == "set" then
-        if data.data.red >= 0x000 and data.data.red <= 0xFFF and data.data.green >= 0x000 and data.data.green <= 0xFFF
-        and data.data.blue >= 0x000 and data.data.green <= 0xFFF and data.data.fade_time >= 0 and data.data.fade_time <= 60000 then
-            pca:fadeToColor(data.data.red, data.data.green, data.data.blue, data.data.fade_time, wsh:send)
-        else
-            wsh:send("error", "invalid_arguments", json)
-        end
+    elseif json.method == "set" then
+        pca:fadeToColor(json.data.red, json.data.green, json.data.blue, json.data.fade_time, wsh)
     else
-        wsh:send("error", "invalid_reqtype")
+        wsh:send("error", "invalid_method")
     end
 end)
-ws:connect(config.websocket.url)
-
--- initialize pca9685
-local pca = PCA9685:initialize(I2Clib:initialize(config.i2c.sda, config.i2c.scl), config.pca9685.address, config.pca9685.channel, config.pca9685.tmr_ref, function(type, msg, data)
-    ws:send(cjson.encode({
-        receiver = nil,
-        type = type,
-        msg = msg,
-        data = data
-    }))
+ws:on("connection", function()
+    print("connected to " .. config.websocket.url)
 end)
+ws:on("close", function(_, status)
+    print("connection closed. status: ", status)
+    tmr.create():alarm(config.websocket.reconnect_interval, tmr.ALARM_SINGLE, function()
+        print("connecting to " .. config.websocket.url)
+        ws:connect(config.websocket.url)
+    end)
+end)
+print("connecting to " .. config.websocket.url)
+ws:connect(config.websocket.url)
