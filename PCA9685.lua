@@ -53,7 +53,7 @@ end
 -- returns true on success, false otherwise
 function PCA9685:setChannelBrightness(channel, brightness, wsh)
     local register = self.channelToRegister(channel)
-    if not self:writeRegister(register + 3, bit.band(bit.rshift(brightness, 2 * 4), 0x0F), wsh) then
+    if not self:writeRegister(register + 3, bit.band(bit.rshift(brightness, 8), 0x0F), wsh) then
         return false
     end
     if not self:writeRegister(register + 2, bit.band(brightness, 0xFF), wsh) then
@@ -71,7 +71,7 @@ function PCA9685:getChannelBrightness(channel, wsh)
     if not rv then
         return rv
     end
-    local msb = bit.lshift(rv, 2 * 4)
+    local msb = bit.lshift(rv, 8)
     rv = self:readRegister(register + 2, wsh)
     if not rv then
         return rv
@@ -93,7 +93,7 @@ end
 -- params: red, green, blue, time (red, green and blue from 0x000 to 0xFFF and time nil or from 0 to infinity in miliseconds)
 -- returns true on success, false otherwise
 function PCA9685:fadeToColor(red, green, blue, time, wsh)
-    if not time or type(time) ~= "number" and time == 0 then
+    if not time or type(time) == "number" and time == 0 then
         return self:setColor(red, green, blue, wsh)
     end
     if wsh then

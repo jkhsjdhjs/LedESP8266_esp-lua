@@ -52,20 +52,13 @@ function I2CLib:readRegister(dev, reg, wsh)
             rv = i2c.read(self.id, 1):byte()
             i2c.stop(self.id)
             return rv
-        else
-            if wsh then
-                wsh:send("error", "device_not_found", { dev = dev })
-            end
-            i2c.stop(self.id)
-            return false
         end
-    else
-        if wsh then
-            wsh:send("error", "device_not_found", { dev = dev })
-        end
-        i2c.stop(self.id)
-        return false
     end
+    if wsh then
+        wsh:send("error", "device_not_found", { dev = dev })
+    end
+    i2c.stop(self.id)
+    return false
 end
 
 -- write register
