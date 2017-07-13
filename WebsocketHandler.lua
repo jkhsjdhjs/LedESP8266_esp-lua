@@ -10,7 +10,7 @@ function WebsocketHandler:initialize(websocket, receiver)
 end
 
 function WebsocketHandler:send(type, msg, data)
-    self.websocket:send(cjson.encode({
+    self.websocket:send(sjson.encode({
         receiver = self.receiver,
         type = type,
         msg = msg,
@@ -19,7 +19,7 @@ function WebsocketHandler:send(type, msg, data)
 end
 
 function WebsocketHandler:broadcast(type, msg, data)
-    self.websocket:send(cjson.encode({
+    self.websocket:send(sjson.encode({
         receiver = nil,
         type = type,
         msg = msg,

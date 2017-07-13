@@ -6,7 +6,7 @@ require "PCA9685"
 function print_error(self, type, msg, data)
     print("error type: ", type)
     print("error msg: ", msg)
-    print("error data: ", cjson.encode(data))
+    print("error data: ", sjson.encode(data))
 end
 
 -- initialize pca9685
@@ -17,10 +17,10 @@ local pca = PCA9685:initialize(I2CLib:initialize(config.i2c.sda, config.i2c.scl)
 
 local ws = websocket.createClient()
 ws:on("receive", function(_, msg, opcode)
-    json = cjson.decode(msg)
+    json = sjson.decode(msg)
     wsh = WebsocketHandler:initialize(ws, json.sender)
     if json.method == "get" then
-        ws:send(cjson.encode({
+        ws:send(sjson.encode({
             receiver = json.sender,
             type = "info",
             msg = nil,
