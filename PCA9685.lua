@@ -3,6 +3,7 @@ PCA9685 = {}
 PCA9685.i2c = nil
 PCA9685.address = nil
 PCA9685.channel = nil
+PCA9685.tmr_ref = nil
 
 
 -- converts a channel number to the address of the first register which belongs to the specified channel (each channel has 4 registers)
@@ -118,9 +119,9 @@ function PCA9685:fadeToColor(red, green, blue, time, wsh)
     local cnt = 0
     -- it takes about 20ms to set a color with :setColor(), so i'm using 30ms as tmr_interval
     local tmr_interval = 30
-    if not tmr.create():alarm(tmr_interval, tmr.ALARM_AUTO, function(timer)
+    if not tmr.alarm(self.tmr_ref, tmr_interval, tmr.ALARM_AUTO, function()
         if cnt >= time - tmr_interval then
-            timer:unregister()
+            tmr.unregister(self.tmr_ref)
             self:setColor(red, green, blue, wsh)
             if wsh then
                 wsh:broadcast("info", "fading_stop", {

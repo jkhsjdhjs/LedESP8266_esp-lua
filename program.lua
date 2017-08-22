@@ -10,7 +10,7 @@ function print_error(self, type, msg, data)
 end
 
 -- initialize pca9685
-local pca = PCA9685:initialize(I2CLib:initialize(config.i2c.sda, config.i2c.scl), config.pca9685.address, config.pca9685.channel, {
+local pca = PCA9685:initialize(I2CLib:initialize(config.i2c.sda, config.i2c.scl), config.pca9685.address, config.pca9685.channel, config.pca9685.tmr_ref, {
     send = print_error,
     broadcast = print_error
 })
