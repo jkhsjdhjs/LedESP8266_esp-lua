@@ -19,19 +19,21 @@ local ws = websocket.createClient()
 ws:on("receive", function(_, msg, opcode)
     json = sjson.decode(msg)
     wsh = WebsocketHandler:initialize(ws, json.sender)
-    if json.method == "get" then
+    if json.msg == "get" then
         ws:send(sjson.encode({
             receiver = json.sender,
             type = "info",
-            msg = nil,
+            msg = "color",
             data = {
-                red = pca:getChannelBrightness(pca.channel.red, wsh),
-                green = pca:getChannelBrightness(pca.channel.green, wsh),
-                blue = pca:getChannelBrightness(pca.channel.blue, wsh)
+                color = {
+                    red = pca:getChannelBrightness(pca.channel.red, wsh),
+                    green = pca:getChannelBrightness(pca.channel.green, wsh),
+                    blue = pca:getChannelBrightness(pca.channel.blue, wsh)
+                }
             }
-        }))
-    elseif json.method == "set" then
-        pca:fadeToColor(json.data.red, json.data.green, json.data.blue, json.data.fade_time, wsh)
+        }, { null = "null" }))
+    elseif json.msg == "set" then
+        pca:fadeToColor(json.data.color.red, json.data.color.green, json.data.color.blue, json.data.fade_time, wsh)
     else
         wsh:send("error", "invalid_method")
     end

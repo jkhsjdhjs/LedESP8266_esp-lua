@@ -30,10 +30,11 @@ end
 -- initialize the PCA9685 module
 -- params: i2c bus object (from I2CLib:initialize()), device address, channels (for exmaple {red = 0, green = 1, blue = 2})
 -- returns self on success, false otherwise
-function PCA9685:initialize(i2c, address, channel, wsh)
+function PCA9685:initialize(i2c, address, channel, tmr_ref, wsh)
     self.i2c = i2c
     self.address = address
     self.channel = channel
+    self.tmr_ref = tmr_ref
     if not self:writeRegister(0x00, 0x00, wsh) then
         return false
     end
@@ -95,6 +96,15 @@ end
 -- returns true on success, false otherwise
 function PCA9685:fadeToColor(red, green, blue, time, wsh)
     if not time or type(time) == "number" and time == 0 then
+        if wsh then
+            wsh:broadcast("info", "color", {
+                color = {
+                    red = red,
+                    green = green,
+                    blue = blue
+                }
+            })
+        end
         return self:setColor(red, green, blue, wsh)
     end
     if wsh then
