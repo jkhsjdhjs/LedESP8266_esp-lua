@@ -15,7 +15,7 @@ function WebsocketHandler:send(type, msg, data)
         type = type,
         msg = msg,
         data = data
-    }))
+    }, { null = "null" }))
 end
 
 function WebsocketHandler:broadcast(type, msg, data)
@@ -24,5 +24,5 @@ function WebsocketHandler:broadcast(type, msg, data)
         type = type,
         msg = msg,
         data = data
-    }))
+    }, { null = "null" }))
 end

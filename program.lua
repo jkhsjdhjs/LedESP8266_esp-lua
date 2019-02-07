@@ -18,20 +18,15 @@ local pca = PCA9685:initialize(I2CLib:initialize(config.i2c.sda, config.i2c.scl)
 local ws = websocket.createClient()
 ws:on("receive", function(_, msg, opcode)
     json = sjson.decode(msg)
-    wsh = WebsocketHandler:initialize(ws, json.sender)
+    wsh = WebsocketHandler:initialize(ws, json.caller)
     if json.msg == "get" then
-        ws:send(sjson.encode({
-            receiver = json.sender,
-            type = "info",
-            msg = "color",
-            data = {
-                color = {
-                    red = pca:getChannelBrightness(pca.channel.red, wsh),
-                    green = pca:getChannelBrightness(pca.channel.green, wsh),
-                    blue = pca:getChannelBrightness(pca.channel.blue, wsh)
-                }
+        wsh:send("info", "color", {
+            color = {
+                red = pca:getChannelBrightness(pca.channel.red, wsh),
+                green = pca:getChannelBrightness(pca.channel.green, wsh),
+                blue = pca:getChannelBrightness(pca.channel.blue, wsh)
             }
-        }, { null = "null" }))
+        })
     elseif json.msg == "set" then
         pca:fadeToColor(json.data.color.red, json.data.color.green, json.data.color.blue, json.data.fade_time, wsh)
     else
